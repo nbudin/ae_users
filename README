@@ -3,3 +3,20 @@ AeUsers
 
 This is the authentication system used in Alleged Entertainment Rails applications such as Journey
 and ProCon.  For more information, go to www.aegames.org.
+
+
+Migrating from AeUsers 0.1
+==========================
+
+To migrate from AeUsers 0.1, run the following SQL commands in your ae_users
+database:
+
+alter table email_addresses add column person_id int;
+update email_addresses, accounts, people set email_addresses.person_id=people.id where email_addresses.account_id = accounts.id and people.account_id = accounts.id;
+alter table email_addresses drop column account_id;
+
+alter table accounts add column person_id int;
+update accounts, people set accounts.person_id=people.id where accounts.id = people.account_id;
+alter table people drop column account_id;
+
+create table open_id_identities (id int not null auto_increment primary key, person_id int, identity_url varchar(4000));
