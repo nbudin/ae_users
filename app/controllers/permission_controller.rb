@@ -45,7 +45,7 @@ class PermissionController < ApplicationController
         @grantees = Person.find(:all, :conditions => ([sql] + doubleterms))
         @grantees += EmailAddress.find(:all,
                                        :conditions => ["LOWER(address) like ?", liketerm]).collect do |ea|
-          ea.account.person
+          ea.person
         end
       else
         @grantees = []

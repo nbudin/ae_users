@@ -2,6 +2,14 @@
 require 'active_record'
 
 module AeUsers
+  begin
+    @@db_name = Rails::Configuration.new.database_configuration["users"]["database"]
+    def self.db_name
+      @@db_name
+    end
+  rescue
+  end
+  
   @@signup_allowed = true
   def self.signup_allowed?
     @@signup_allowed
@@ -11,17 +19,23 @@ module AeUsers
     @@signup_allowed = false
   end
   
-  @@permissioned_classes = {}
+  @@permissioned_classes = []
   def self.add_permissioned_class(klass)
-    @@permissioned_classes[klass.name] = klass
+    if not @@permissioned_classes.include?(klass.name)
+      @@permissioned_classes.push(klass.name)
+    end
   end
   
   def self.permissioned_classes
-    return @@permissioned_classes.values
+    return @@permissioned_classes.collect do |name|
+      eval(name)
+    end
   end
   
   def self.permissioned_class(name)
-    return @@permissioned_classes[name]
+    if @@permissioned_classes.include?(name)
+      return eval(name)
+    end
   end
 
   # yeah, the following 2 functions are Incredibly Evil(tm).  I couldn't find any other way
@@ -39,6 +53,10 @@ module AeUsers
     END_FUNC
   end
 
+  def self.map_openid(map)
+    map.open_id_complete 'auth', :controller => "auth", :action => "login", :requirements => { :method => :get }
+  end
+  
   module Acts
     module Permissioned
       def self.included(base)
@@ -77,6 +95,25 @@ module AeUsers
       module InstanceMethods
         def permitted?(person, permission=nil)
           person.permitted? self, permission
+        end
+        
+        def permitted_people(permission)
+          grants = permissions.find_all_by_permission(permission)
+          people = []
+          grants.collect {|grant| grant.grantee}.each do |grantee|
+            if grantee.kind_of? Person
+              if not people.include? grantee
+                people << grantee
+              end
+            elsif grantee.kind_of? Role
+              grantee.people.each do |person|
+                if not people.include? person
+                  people << person
+                end
+              end
+            end
+          end
+          return people
         end
 
         def grant(grantees, permissions=nil)
@@ -142,29 +179,48 @@ module AeUsers
         base.extend ClassMethods
       end
 
-      def access_denied(msg=nil)
+      def access_denied(msg=nil, options={})
+        options = {
+          :layout => active_layout
+        }.update(options)
         msg ||= "Sorry, you don't have access to view that page."
-        if session[:account]
+        if logged_in?
           body = "If you feel you've been denied access in error, please contact the administrator of this web site."
         else
           body = "Try logging into an account."
         end
         @login = Login.new(:email => cookies['email'])
-        render :inline => "<h1>#{msg}</h1>\n\n<div id=\"login\"><p><b>#{body}</b></p><%= render :partial => 'auth/auth_form' %></div>", :layout => "global"
+        render options.update({:inline => "<h1>#{msg}</h1>\n\n<div id=\"login\"><p><b>#{body}</b></p><%= render :partial => 'auth/auth_form' %></div>"})
       end
       
       def logged_in?
-        return Account.find(session[:account])
+        if session[:person]
+          begin
+            return Person.find(session[:person])
+          rescue ActiveRecord::RecordNotFound
+            return nil
+          end
+        elsif session[:account]
+          begin
+            acct = Account.find(session[:account])
+            session[:person] = acct.person.id
+            return acct.person
+          rescue ActiveRecord::RecordNotFound
+            return nil
+          end
+        else
+          return nil
+        end
       end
     
       def logged_in_person
-        return Account.find(session[:account]).person
+        return logged_in?
       end
 
       module ClassMethods
         def require_login(conditions = {})
           before_filter conditions do |controller|
-            if not controller.session[:account]
+            if not controller.logged_in?
               controller.access_denied "Sorry, but you need to be logged in to view that page."
             end
           end
@@ -182,12 +238,7 @@ module AeUsers
             end
             cn ||= controller.class.name.gsub(/Controller$/, "").singularize
             full_perm_name = "#{perm_name}_#{cn.tableize}"
-            if controller.session[:account]
-              a = Account.find(controller.session[:account])
-              if a
-                p = a.person
-              end
-            end
+            p = controller.logged_in_person
             if p
               logger.debug("Checking #{perm_name} permission on #{cn.pluralize} for user #{p.name}")
             end
@@ -206,13 +257,7 @@ module AeUsers
             cn ||= controller.class.name.gsub(/Controller$/, "").singularize
             o = eval(cn).find(controller.params[id_param])
             if not o.nil?
-              p = nil
-              if controller.session[:account]
-                a = Account.find(controller.session[:account])
-                if a  
-                  p = a.person
-                end
-              end
+              p = controller.logged_in_person
               if p
                 logger.debug("Checking #{perm_name} permission on #{o.class.name} #{o.id} for user #{p.name}")
               end
@@ -237,7 +282,14 @@ module AeUsers
         end
 
         def rest_view_permissions(options = {})
-          require_class_permission("list", { :only => [:index] }.update(options))
+          options = {
+            :restrict_list => false,
+          }.update(options)
+          restrict_list = options[:restrict_list]
+          options.delete(:restrict_list)
+          if restrict_list
+            require_class_permission("list", { :only => [:index] }.update(options))
+          end
           require_permission("show", { :only => [:show] }.update(options))
         end
 
@@ -282,11 +334,11 @@ module AeUsers
     end
     
     def logged_in?
-      return Account.find(session[:account])
+      return controller.logged_in?
     end
     
     def logged_in_person
-      return Account.find(session[:account]).person
+      return controller.logged_in_person
     end
     
     def app_profile(person = nil)

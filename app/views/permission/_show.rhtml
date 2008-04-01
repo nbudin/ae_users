@@ -47,7 +47,7 @@ div.auto_complete {
     <% if logged_in? and logged_in_person.permitted?(item, "change_permissions") -%>
       <div id="<%= perm %>_insert_grants_here" style="display: inline;"></div>
       | <span id="grant_open_<%=perm%>">
-          <%= link_to_function "Add", "$('grant_open_#{perm}').toggle(); $('grant_#{perm}').toggle();",
+          <%= link_to_function "Add", "$('grant_open_#{perm}').toggle(); $('grant_#{perm}').toggle(); $('#{perm}_grantee').focus();",
             :class => "permission_action" %>
         </span>
         <span id="grant_<%=perm %>" style="display: none;">

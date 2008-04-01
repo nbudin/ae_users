@@ -1,13 +1,43 @@
 <% ae_form_for('login', @login, :url => {:action => 'login', :controller => 'auth'},
-        :html => {:id => 'auth_form'} ) do |f| -%>
-    <% if not session[:account] %>
+        :html => {:id => 'auth_form', :style => 'max-width: 400px;'} ) do |f| -%>
+    <% if not logged_in? %>
+      <script type="text/javascript">
+        function chooseLoginType(loginType) {
+            if (loginType == 'account') {
+                $('login_type_openid').hide();
+                $('login_type_account').show();
+            }
+            if (loginType == 'openid') {
+                $('login_type_account').hide();
+                $('login_type_openid').show();
+            }
+        }
+        
+        Event.observe(window, 'load', function () {
+            <% if @openid_url -%>
+              $('login_type').value = 'openid';
+            <% end -%>
+            chooseLoginType($F('login_type'));
+        });
+      </script>
       <table style="width: 100%;">
         <tr>
           <td>
-            <%= f.text_field "email", :label => "Email" %>
-            <label for="password">Password:</label>
-            <%= password_field "login", "password", :style => "width: 42.5%; display: inline" %>
-            <%= submit_tag "Log in", :style => "margin-left: 2.5%; width: 20%; display: inline" %>
+             <select name="login_type" id="login_type" onChange="chooseLoginType(this.value);" style="float: left; margin-right: 2%;">
+                <option value="account">Email:</option>
+                <option value="openid">OpenID:</option>
+              </select>
+            <span id="login_type_account">
+              <%= text_field "login", "email" %>
+              <label for="password">Password:</label>
+              <%= password_field "login", "password", :style => "width: 42.5%; display: inline" %>
+              <%= submit_tag "Log in", :style => "margin-left: 2.5%; width: 20%; display: inline" %>
+            </span>
+            <span id="login_type_openid" style="display: none;">
+              <%= text_field_tag "openid_url", @openid_url, :style => "background: #FFFFFF url('#{image_path "openid.gif", :plugin => 'ae_users'}') no-repeat scroll 0pt 50%; padding-left: 18px; width: 60%;" %>
+              <%= submit_tag "Log in with OpenID" %>
+            </span>
+            <%= f.hidden_field "return_to" %>
             <br/>
             <ul class="inline">
               <li>

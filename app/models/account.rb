@@ -2,25 +2,12 @@ require 'digest/md5'
 
 class Account < ActiveRecord::Base
   establish_connection :users
-  has_one :person
-  has_many :email_addresses, :dependent => :destroy
+  belongs_to :person
   
   def self.find_by_email_address(address)
-    ea = EmailAddress.find_by_address(address)
-    if not ea.nil?
-      return ea.account
-    end
-  end
-  
-  def primary_email_address
-    primary = email_addresses.find_by_primary true
-    if not primary
-      primary = email_addresses.find :first
-    end
-    if primary.nil?
-      return nil
-    else
-      return primary.address
+    p = Person.find_by_email_address(address)
+    if not p.nil?
+      return p.account
     end
   end
   

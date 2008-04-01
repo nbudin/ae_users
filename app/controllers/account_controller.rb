@@ -1,6 +1,8 @@
 class AccountController < ApplicationController
-  before_filter :check_logged_in, :only => [:edit_profile, :edit_email_addresses, :change_password]
+  require_login :only => [:edit_profile, :edit_email_addresses, :change_password, :add_openid, :delete_openid]
   before_filter :check_signup_allowed, :only => [:signup, :signup_success]
+  
+  filter_parameter_logging :password
   
   def activate
     if logged_in?
@@ -34,15 +36,14 @@ class AccountController < ApplicationController
   end
   
   def edit_email_addresses
-    account = Account.find(session[:account])
     errs = []
     
     if params[:new_address] and params[:new_address].length > 0
       existing_ea = EmailAddress.find_by_address params[:new_address]
       if existing_ea
-        errs.push "A different account is already associated with the email address you tried to add."
+        errs.push "A different person is already associated with the email address you tried to add."
       else
-        newea = EmailAddress.create :account => account, :address => params[:new_address]
+        newea = EmailAddress.create :person => logged_in_person, :address => params[:new_address]
         if params[:primary] == 'new'
           newea.primary = true
           newea.save
@@ -54,8 +55,8 @@ class AccountController < ApplicationController
       id = params[:primary].to_i
       if id != 0
         addr = EmailAddress.find id
-        if addr.account != account
-          errs.push "The email address you've selected as primary belongs to a different account."
+        if addr.person != logged_in_person
+          errs.push "The email address you've selected as primary belongs to a different person."
         else
           addr.primary = true
           addr.save
@@ -68,10 +69,10 @@ class AccountController < ApplicationController
     if params[:delete]
       params[:delete].each do |id|
         addr = EmailAddress.find id
-        if addr.account != account
-          errs.push "The email address you've selected as primary belongs to a different account."
+        if addr.person != logged_in_person
+          errs.push "The email address you've selected to delete belongs to a different person."
         elsif addr.primary
-          errs.push "You can't delete the primary email address for your account."
+          errs.push "You can't delete your primary email address.  Try making a different email address your primary address first."
         else
           addr.destroy
         end
@@ -93,8 +94,9 @@ class AccountController < ApplicationController
       flash[:error_messages] = ["The passwords you entered don't match.  Please try again."]
       redirect_to :action => :edit_profile
     else
-      session[:account].password = password[:password1]
-      session[:account].save
+      acct = logged_in_person.account
+      acct.password = password[:password1]
+      acct.save
     end
   end
   
@@ -104,12 +106,46 @@ class AccountController < ApplicationController
   def signup_success
   end
   
+  def add_openid
+    if using_open_id?
+      authenticate_with_open_id(params[:openid_url]) do |result, identity_url|
+        if result.successful?
+          id = logged_in_person.open_id_identities.find_by_identity_url(identity_url)
+          if id.nil?
+            id = OpenIdIdentity.new :person => logged_in_person, :identity_url => identity_url
+            if not id.save
+              flash[:error_messages] = id.errors.collect { |e| e[0].humanize + " " + e[1] }
+            end
+          end
+        else
+          flash[:error_messages] = [result.message]
+        end
+        redirect_to :action => 'edit_profile'
+      end
+    else
+      flash[:error_messages] = ["Please enter an OpenID url."]
+    end
+  end
+  
+  def delete_openid
+    id = OpenIdIdentity.find(params[:id])
+    if id.person == logged_in_person
+      if logged_in_person.account or logged_in_person.open_id_identities.length > 1
+        id.destroy
+      else
+        flash[:error_messages] = ["Deleting that OpenID would leave you no way of logging in!"]
+      end
+    else
+      flash[:error_messages] = ["That OpenID does not belong to you!"]
+    end
+    redirect_to :action => 'edit_profile'
+  end
+  
   def signup
     @account = Account.new(:password => params[:password1])
-    @addr = EmailAddress.new :address => params[:email], :account => @account, :primary => true
-
-    @person = Person.new :account => @account
-    @person.attributes = params[:person]
+    @person = Person.new(params[:person])
+    @addr = EmailAddress.new :address => params[:email], :person => @person, :primary => true
+    @person.account = @account
     
     if not AeUsers.profile_class.nil?
       @app_profile = AeUsers.profile_class.send(:new, :person => @person)
@@ -120,7 +156,8 @@ class AccountController < ApplicationController
       error_fields = []
       error_messages = []
     
-      if Account.find_by_email_address(params[:email])
+      if Person.find_by_email_address(params[:email])
+        error_fields.push "email"
         error_messages.push "An account at that email address already exists!"
       end
     
@@ -165,17 +202,10 @@ class AccountController < ApplicationController
     end
   end
   
-  def check_logged_in
-    if not logged_in?
-      flash[:error_messages] = ["You're not logged in.  To view the page you were trying to view, you must log in."]
-      redirect_to :controller => :main, :action => :index
-    end
-  end
-  
+  private  
   def check_signup_allowed
     if not AeUsers.signup_allowed?
-      flash[:error_messages] = ["Account signup is not allowed on this site."]
-      redirect_to :controller => :main, :action => :index
+      access_denied "Account signup is not allowed on this site."
     end
   end
 end

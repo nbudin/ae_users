@@ -1,12 +1,45 @@
 <h1>Edit your profile</h1>
 
-<% ae_form_for("password", nil, :url => {:action => 'change_password'}, 
-	:html => {:id => 'change_password_form'}) do |f| %>
-  <h2>Change password</h2>
-  <%= f.password_field "password1", :label => "New password" %>
-  <%= f.password_field "password2", :label => "Confirm new password" %>
-  <%= submit_tag "Change password" %>
-<% end %>
+<style type="text/css">
+form {
+	max-width: 640px;
+}
+</style>
+
+<% if @person.account -%>
+  <% ae_form_for("password", nil, :url => {:action => 'change_password'}, 
+          :html => {:id => 'change_password_form'}) do |f| %>
+    <h2>Change password</h2>
+    <%= f.password_field "password1", :label => "New password" %>
+    <%= f.password_field "password2", :label => "Confirm new password" %>
+    <%= submit_tag "Change password" %>
+  <% end %>
+<% end -%>
+
+<h2>OpenID Identities</h2>
+
+<p>OpenID is a free and easy way to use a single digital identity across the Internet.  For more information,
+<%= link_to "visit the OpenID web site", "http://www.openid.net" %>.</p>
+
+<table>
+  <% @person.open_id_identities.each do |id| -%>
+    <tr>
+      <td></td>
+      <td>
+        <%= image_tag "openid.gif", :plugin => "ae_users" %>
+        <i><%=h id.identity_url %></i>
+      </td>
+      <td><%= button_to "Delete", {:action => "delete_openid", :id => id.id}, {:confirm => "Are you sure you wish to remove this OpenID?"} %></td>
+    </tr>
+  <% end -%>
+  <tr>
+    <% ae_form_for("add_openid", nil, :url => {:action => "add_openid"}) do |f| -%>
+      <td>Add new OpenID:</td>
+      <td><%= text_field_tag "openid_url", @openid_url, :style => "background: #FFFFFF url('#{image_path "openid.gif", :plugin => 'ae_users'}') no-repeat scroll 0pt 50%; padding-left: 18px; width: 60%;" %></td>
+      <td><%= submit_tag "Add" %></td>
+    <% end -%>
+  </tr>
+</table>
 
 <% ae_form_for("email_addresses", nil, :url => {:action => 'edit_email_addresses'}, 
 	:html => {:id => 'edit_email_addresses_form'}) do |f| %>
@@ -23,7 +56,7 @@
       <th>Primary</th>
       <th>Delete</th>
     </tr>
-      <% @person.account.email_addresses.each do |addr| -%>
+      <% @person.email_addresses.each do |addr| -%>
         <tr>
           <td></td>
           <td>

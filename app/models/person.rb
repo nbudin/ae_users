@@ -1,9 +1,68 @@
 class Person < ActiveRecord::Base
   establish_connection :users
-  belongs_to :account
+  has_one :account
+  has_many :open_id_identities
   has_and_belongs_to_many :roles
   has_many :permissions, :dependent => :destroy
+  has_many :email_addresses, :dependent => :destroy
+
+  def self.sreg_map  
+    {:fullname => Proc.new do |fullname|
+      if fullname =~ /^([^ ]+) +(.*)$/
+        {:firstname => $1, :lastname => $2}
+      else
+        {:firstname => fullname}
+      end
+    end, 
+    :dob => Proc.new do |dob|
+      if dob =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/
+        {:birthdate => Time.local($1, $2, $3)}
+      else
+        {}
+      end
+    end,
+    :gender => Proc.new do |gender|
+      if gender == 'M'
+        {:gender => 'male'}
+      elsif gender == 'F'
+        {:gender => 'female'}
+      else
+        {}
+      end
+    end,
+    :email => Proc.new do |email|
+      {:primary_email_address => email}
+    end
+    }
+  end
   
+  def self.find_by_email_address(address)
+    ea = EmailAddress.find_by_address(address)
+    if not ea.nil?
+      return ea.person
+    end
+  end
+  
+  def primary_email_address
+    primary = email_addresses.find_by_primary true
+    if not primary
+      primary = email_addresses.find :first
+    end
+    if primary.nil?
+      return nil
+    else
+      return primary.address
+    end
+  end
+  
+  def primary_email_address=(address)
+    if primary_email_address != address
+      ea = email_addresses.find_or_create_by_address(address)
+      ea.primary = true
+      ea.save
+    end
+  end
+
   def all_permissions
     allperms = permissions.find(:all)
     roles.each do |role|
@@ -14,9 +73,13 @@ class Person < ActiveRecord::Base
   
   def permitted?(obj, perm_name)
     if obj.kind_of? ActiveRecord::Base
-      objrep = "#{obj.class.name} #{obj.id}"
+      if not obj.id.nil?
+        objrep = "#{obj.class.name} #{obj.id}"
+      else
+        objrep = "Unsaved #{obj.class.name}"
+      end
     else
-      obj = obj.to_s
+      objrep = obj.to_s
     end
     logger.info "Checking #{name}'s permissions to #{perm_name} on #{objrep}"
     result = false

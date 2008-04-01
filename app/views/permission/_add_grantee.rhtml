@@ -24,10 +24,10 @@
           <td>
             <b><%=h grantee.name %></b><br/>
             <i>
-              <% if grantee.account.nil? -%>
+              <% if grantee.primary_email_address.nil? -%>
                 No email address
               <% else -%>
-                <%=h grantee.account.primary_email_address %>
+                <%=h grantee.primary_email_address %>
               <% end -%>
           </td>
         </tr>
