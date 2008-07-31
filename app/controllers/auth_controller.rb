@@ -26,7 +26,15 @@ class AuthController < ApplicationController
             cookies['email'] = @login.email
           end
         end
-        redirect_to @login.return_to
+        if @login.return_to
+          redirect_to @login.return_to
+        elsif session[:return_to]
+          rt = session[:return_to]
+          session[:return_to] = nil
+          redirect_to rt
+        else
+          redirect_to '/'
+        end
       elsif using_open_id?
         @openid_url = params[:openid_url]
       end
@@ -97,7 +105,7 @@ class AuthController < ApplicationController
         end
         
         session[:person] = @person
-        redirect_to params[:return_to]
+        redirect_to session[:return_to]
       end
     end
   end
@@ -145,66 +153,5 @@ class AuthController < ApplicationController
   def logout
     reset_session
     redirect_to request.env["HTTP_REFERER"]
-  end
-  
-  private
-  def attempt_login(login)
-    @account = Account.find_by_email_address(login.email)
-    if not @account.nil? and not @account.active
-      redirect_to :action => :needs_activation, :account => @account, :email => login.email
-      return false
-    elsif not @account.nil? and @account.check_password login.password
-      if (not AeUsers.profile_class.nil? and not @account.person.nil? and 
-        AeUsers.profile_class.find_by_person_id(@account.person.id).nil?)
-    
-        session[:provisional_person] = @account.person.id
-        redirect_to :action => :needs_profile, :return_to => login.return_to
-        return false
-      else
-        session[:person] = @account.person.id
-        return true
-      end
-    else
-      flash[:error_messages] = ['Invalid email address or password.']
-      return false
-    end
-  end
-  
-  def attempt_open_id_login(return_to)
-    optional_fields = Person.sreg_map.keys
-    if AeUsers.profile_class and AeUsers.profile_class.respond_to?('sreg_map')
-      optional_fields += AeUsers.profile_class.sreg_map.keys
-    end
-    authenticate_with_open_id(params[:openid_url], :optional => optional_fields) do |result, identity_url, registration|
-      if result.successful?
-        id = OpenIdIdentity.find_by_identity_url(identity_url)
-        if not id.nil?
-          @person = id.person
-        end
-        if id.nil? or @person.nil?
-          if AeUsers.signup_allowed?
-            session[:identity_url] = identity_url
-            redirect_to :action => :needs_person, :return_to => return_to, :registration => registration
-            return false
-          else
-            flash[:error_messages] = ["Sorry, you are not registered with this site."]
-            return false
-          end
-        else
-          if (not AeUsers.profile_class.nil? and AeUsers.profile_class.find_by_person_id(@person.id).nil?)
-            session[:provisional_person] = @person.id
-            redirect_to :action => :needs_person, :return_to => return_to
-            return false
-          else
-            session[:person] = @person.id
-            return true
-          end
-        end
-      else
-        flash[:error_messages] = result.message
-        return false
-      end
-    end
-    return session[:person]
   end
 end

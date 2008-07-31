@@ -1,7 +1,7 @@
 class AuthNotifier < ActionMailer::Base 
   def account_activation(account, address=nil)
     if address.nil?
-      address = account.primary_email_address
+      address = account.person.primary_email_address
     elsif address.kind_of? EmailAddress
       address = address.address
     end
@@ -17,7 +17,7 @@ class AuthNotifier < ActionMailer::Base
   
   def generated_password(account, password, address=nil)
     if address.nil?
-      address = account.primary_email_address
+      address = account.person.primary_email_address
     elsif address.kind_of? EmailAddress
       address = address.address
     end

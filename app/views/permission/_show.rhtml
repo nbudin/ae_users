@@ -31,7 +31,11 @@ div.auto_complete {
           <% elsif grant.grantee.kind_of? Person -%>
             <%= image_tag "user.png", :plugin => "ae_users" %>
           <% end -%>
-          <%= h(grant.grantee.name) %>
+          <% if grant.grantee -%>
+            <%= h(grant.grantee.name) %>
+          <% else -%>
+            Unknown entity
+          <% end -%>
           <% if logged_in? and logged_in_person.permitted?(item, "change_permissions") -%>
             <%= link_to_remote "Remove",
                 { :url => { :controller => "permission", :action => "revoke", :id => grant.id },

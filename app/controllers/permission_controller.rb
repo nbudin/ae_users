@@ -76,10 +76,12 @@ class PermissionController < ApplicationController
     end
        
     @perm = Permission.create(perm_params.update(:permission => params[:perm], :permissioned => @permissioned))
+    @perm.destroy_caches
   end
   
   before_filter :check_revoke_perms, :only => [:revoke]
   def revoke
+    @perm.destroy_caches
     @perm.destroy
     render :nothing => true
   end
@@ -100,6 +102,7 @@ class PermissionController < ApplicationController
     
     @role.people.push @person
     @role.save
+    PermissionCache.destroy_all(:person_id => @person.id)
     
     render :partial => "role_member", :locals => {:person => @person}
   end
@@ -107,11 +110,15 @@ class PermissionController < ApplicationController
   def remove_role_member   
     @role.people.delete(@role.people.find(params[:id]))
     @role.save
+    PermissionCache.destroy_all(:person_id => @person.id)
     
     render :nothing => true
   end
   
   def delete_role
+    @role.people.each do |person|
+      PermissionCache.destroy_all(:person_id => @person.id)
+    end
     @role.destroy
     render :nothing => true
   end
