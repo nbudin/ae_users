@@ -32,7 +32,7 @@ div.auto_complete {
       :callback => "new Ajax.Updater('members_list', '#{url_for :controller => 'permission', :action => 'add_role_member',
             :role => @role.id, :escape => false}',
             {
-              parameters: { 'klass': klass, 'id': id },
+              parameters: { 'klass': klass, 'id': id #{protect_against_forgery? ? ", 'authenticity_token': '#{form_authenticity_token}'" : ""}},
               insertion: Insertion.Top,
             }
           );" %>
