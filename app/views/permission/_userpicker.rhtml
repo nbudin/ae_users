@@ -1,10 +1,5 @@
 <%= text_field_tag domid, "", { :style => "width: 15em; display: inline; float: none;" } %>
 <div id="<%=domid%>_auto_complete" class="auto_complete"></div>
-<% extra_options = if protect_against_forgery?
-  { :authenticity_token => form_authenticity_token }
-else
-  { }
-end -%>
 <%= auto_complete_field(domid, :select => "grantee_id", :param_name => "permission[grantee]",
     :after_update_element => "function (el, selected) { 
         kid = el.value.split(':');
@@ -17,4 +12,4 @@ end -%>
         $('#{domid}').value = '';
       }",
     :url => { :controller => "permission", :action => "auto_complete_for_permission_grantee",
-      :people => options[:people], :roles => options[:roles], :escape => false}.update(extra_options)) %>
+      :people => options[:people], :roles => options[:roles], :escape => false}.update(authenticity_options)) %>

@@ -4,11 +4,11 @@
       <%= link_to  logged_in_person.name, 
           :controller => 'account', :action => 'edit_profile' %>
       <% if logged_in_person.administrator? -%>
-        |
+        &bull;
         <%= image_tag "admin.png", :plugin => "ae_users" %>
         <%= link_to "Administration", :controller => 'permission', :action => 'admin' %>
       <% end -%>
-      |
+      &bull;
       <%= image_tag "logout.png", :plugin => "ae_users" %>
       <%= link_to "Log out", :controller => 'auth', :action => 'logout' %>
   <% else -%>
