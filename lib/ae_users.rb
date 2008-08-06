@@ -359,13 +359,21 @@ module AeUsers
           elsif conditions[:class_param]
             cpn = conditions[:class_param]
           end
-          before_filter conditions do |controller|
+          
+          before_filter conditions do |controller|  
             if cn.nil? and cpn
               cn = controller.params[cpn]
             end
             cn ||= controller.class.name.gsub(/Controller$/, "").singularize
             full_perm_name = "#{perm_name}_#{cn.tableize}"
-            controller.do_permission_check(nil, full_perm_name, "Sorry, but you are not permitted to #{perm_name} #{cn.downcase.pluralize}.")
+            
+            denied_msg = if conditions[:denied_message]
+              conditions[:denied_message]
+            else
+              "Sorry, but you are not permitted to #{perm_name} #{cn.downcase.pluralize}."
+            end
+            
+            controller.do_permission_check(nil, full_perm_name, denied_msg)
           end
         end
 
@@ -377,8 +385,15 @@ module AeUsers
           before_filter conditions do |controller|
             cn ||= controller.class.name.gsub(/Controller$/, "").singularize
             o = eval(cn).find(controller.params[id_param])
+            
+            denied_msg = if conditions[:denied_message]
+              conditions[:denied_message]
+            else
+              "Sorry, but you are not permitted to #{perm_name} this #{cn.downcase}."
+            end
+            
             if not o.nil?
-              controller.do_permission_check(o, perm_name, "Sorry, but you are not permitted to #{perm_name} this #{cn.downcase}.")
+              controller.do_permission_check(o, perm_name, denied_msg)
             end
           end
         end
