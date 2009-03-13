@@ -6,7 +6,7 @@ class AccountController < ApplicationController
   
   def activate
     if logged_in?
-      redirect_to :controller => :main, :action => :index
+      redirect_to "/"
       return
     end
 
@@ -188,6 +188,7 @@ class AccountController < ApplicationController
         end
     
         begin
+          ActionMailer::Base.default_url_options[:host] = request.host
           @account.generate_activation
         rescue
           @account.activation_key = nil

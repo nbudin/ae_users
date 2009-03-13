@@ -48,6 +48,15 @@ module AeUsers
   def self.cache_permissions?
     @@cache_permissions
   end
+  
+  @@js_framework = "prototype"
+  def self.js_framework
+    @@js_framework
+  end
+  
+  def self.js_framework=(framework)
+    @@js_framework = framework
+  end
 
   # yeah, the following 2 functions are Incredibly Evil(tm).  I couldn't find any other way
   # to pass around an ActiveRecord class without having it be potentially overwritten on
@@ -231,6 +240,8 @@ module AeUsers
           rescue ActiveRecord::RecordNotFound
             return nil
           end
+        elsif attempt_login_from_params
+          return logged_in?
         else
           return nil
         end
@@ -323,12 +334,12 @@ module AeUsers
       
       def attempt_login_from_params
         return_to = request.request_uri
-        if params[:ae_email] and params[:ae_password]
+        if not params[:ae_email].blank? and not params[:ae_password].blank?
           login = Login.new(:email => params[:ae_email], :password => params[:ae_password], :return_to => return_to)
           attempt_login(login)
-        elsif params[:openid_url]
+        elsif not params[:openid_url].blank?
           attempt_open_id_login(return_to)
-        elsif params[:ae_ticket]
+        elsif not params[:ae_ticket].blank?
           attempt_ticket_login(params[:ae_ticket])
         end
       end
@@ -359,21 +370,13 @@ module AeUsers
           elsif conditions[:class_param]
             cpn = conditions[:class_param]
           end
-          
-          before_filter conditions do |controller|  
+          before_filter conditions do |controller|
             if cn.nil? and cpn
               cn = controller.params[cpn]
             end
             cn ||= controller.class.name.gsub(/Controller$/, "").singularize
             full_perm_name = "#{perm_name}_#{cn.tableize}"
-            
-            denied_msg = if conditions[:denied_message]
-              conditions[:denied_message]
-            else
-              "Sorry, but you are not permitted to #{perm_name} #{cn.downcase.pluralize}."
-            end
-            
-            controller.do_permission_check(nil, full_perm_name, denied_msg)
+            controller.do_permission_check(nil, full_perm_name, "Sorry, but you are not permitted to #{perm_name} #{cn.downcase.pluralize}.")
           end
         end
 
@@ -385,15 +388,8 @@ module AeUsers
           before_filter conditions do |controller|
             cn ||= controller.class.name.gsub(/Controller$/, "").singularize
             o = eval(cn).find(controller.params[id_param])
-            
-            denied_msg = if conditions[:denied_message]
-              conditions[:denied_message]
-            else
-              "Sorry, but you are not permitted to #{perm_name} this #{cn.downcase}."
-            end
-            
             if not o.nil?
-              controller.do_permission_check(o, perm_name, denied_msg)
+              controller.do_permission_check(o, perm_name, "Sorry, but you are not permitted to #{perm_name} this #{cn.downcase}.")
             end
           end
         end
@@ -486,7 +482,23 @@ module AeUsers
         :callback => ""
       }.update(options)
       
-      render :partial => "permission/userpicker", :locals => {:domid => domid, :options => options}
+      render :inline => <<-ENDRHTML
+<%= text_field_tag "#{domid}", "", { :style => "width: 15em; display: inline; float: none;" } %>
+<div id="#{domid}_auto_complete" class="auto_complete"></div>
+<%= auto_complete_field('#{domid}', :select => "grantee_id", :param_name => "permission[grantee]",
+    :after_update_element => "function (el, selected) { 
+        kid = el.value.split(':');
+        klass = kid[0];
+        id = kid[1];
+        cb = function(klass, id) {
+          #{options[:callback]}
+        };
+        cb(klass, id);
+        $('#{domid}').value = '';
+      }",
+    :url => { :controller => "permission", :action => "auto_complete_for_permission_grantee",
+      :people => #{options[:people]}, :roles => #{options[:roles]}, :escape => false}) %>
+      ENDRHTML
     end
   end
 end

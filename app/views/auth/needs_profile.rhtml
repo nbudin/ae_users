@@ -4,10 +4,9 @@
     please take a moment to update your personal information below.</p>
   
 <% ae_form_for("app_profile", @app_profile) do |profile_form| %>
-    <%= hidden_field_tag "account", @account.id %>
+    <%= hidden_field_tag "return_to", params[:return_to] %>
+    <%= hidden_field_tag "person", @person.id %>
     <%= render :partial => "account/#{@app_profile.class.name.tableize.singularize}", 
 		:locals => {:f => profile_form}%>
-    <label for="password">Type your password again for verification:</label>
-    <%= password_field_tag "password" %>
     <%= submit_tag "Update your profile" %>
 <% end %>

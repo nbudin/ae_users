@@ -1,26 +1,8 @@
 <% ae_form_for('login', @login, :url => {:action => 'login', :controller => 'auth'},
         :html => {:id => 'auth_form', :style => 'max-width: 400px;'} ) do |f| -%>
     <% if not logged_in? %>
-      <script type="text/javascript">
-        function chooseLoginType(loginType) {
-            $$('select.login_type').each(function(e) { e.value = loginType; });
-            if (loginType == 'account') {
-                $$('span.login_type_openid').each(function(e) { e.hide() });
-                $$('span.login_type_account').each(function(e) { e.show() });
-            }
-            if (loginType == 'openid') {
-                $$('span.login_type_account').each(function(e) { e.hide() });
-                $$('span.login_type_openid').each(function(e) { e.show() });
-            }
-        }
-        
-        Event.observe(window, 'load', function () {
-            <% if @openid_url or params[:openid_url] -%>
-              $('login_type').value = 'openid';
-            <% end -%>
-            chooseLoginType($F('login_type'));
-        });
-      </script>
+      <script type="text/javascript" src="<%=url_for :controller => 'auth', :action => "auth_form", 
+        :format => "js", :openid_url => params[:openid_url] %>"></script>
       <table style="width: 100%;">
         <tr>
           <td>
@@ -35,7 +17,7 @@
               <%= submit_tag "Log in", :style => "margin-left: 2.5%; width: 20%; display: inline" %>
             </span>
             <span class="login_type_openid" style="display: none;">
-              <%= text_field_tag "openid_url", @openid_url, :style => "background: #FFFFFF url('#{image_path "openid.gif", :plugin => 'ae_users'}') no-repeat scroll 0pt 50%; padding-left: 18px; width: 60%;" %>
+              <%= text_field_tag "openid_url", @openid_url, :style => "background: #FFFFFF url('#{image_path "ae_users/openid.gif"}') no-repeat scroll 0pt 50%; padding-left: 18px; width: 60%;" %>
               <%= submit_tag "Log in with OpenID" %>
             </span>
             <%= f.hidden_field "return_to" %>
@@ -63,14 +45,14 @@
         <p>You are currently logged in as <%= logged_in_person.name %>.</p>
         <p>
           <% if logged_in_person.administrator? -%>
-            <%= image_tag "admin.png", :plugin => "ae_users" %>
+            <%= image_tag "ae_users/admin.png" %>
             <%= link_to "Administration", :controller => 'permission', :action => 'admin' %>
             <span style="margin-right: 1em;">&nbsp;</span>
           <% end -%>
-          <%= image_tag "user.png", :plugin => "ae_users" %>
+          <%= image_tag "ae_users/user.png" %>
           <%= link_to "Edit profile", :controller => 'account', :action => 'edit_profile' %>
           <span style="margin-right: 1em;">&nbsp;</span>
-          <%= image_tag "logout.png", :plugin => "ae_users" %>
+          <%= image_tag "ae_users/logout.png" %>
           <%= link_to "Log out", :controller => :auth, :action => :logout %>
         </p>
       </div>

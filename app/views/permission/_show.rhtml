@@ -27,9 +27,9 @@ div.auto_complete {
         <% grant = grants[i] -%>
         <span id="grant_<%=grant.id%>">
           <% if grant.grantee.kind_of? Role -%>
-            <%= image_tag "group.png", :plugin => "ae_users" %>
+            <%= image_tag "ae_users/group.png" %>
           <% elsif grant.grantee.kind_of? Person -%>
-            <%= image_tag "user.png", :plugin => "ae_users" %>
+            <%= image_tag "ae_users/user.png" %>
           <% end -%>
           <% if grant.grantee -%>
             <%= h(grant.grantee.name) %>

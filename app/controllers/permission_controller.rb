@@ -102,25 +102,22 @@ class PermissionController < ApplicationController
     
     @role.people.push @person
     @role.save
-    Permission.new(:person => @person).destroy_caches
+    PermissionCache.destroy_all(:person_id => @person.id)
     
     render :partial => "role_member", :locals => {:person => @person}
   end
   
   def remove_role_member   
-    @person = @role.people.find(params[:id])
-    if @person
-      @role.people.delete(@person)
-      @role.save
-      Permission.new(:person => @person).destroy_caches
-    end
+    @role.people.delete(@role.people.find(params[:id]))
+    @role.save
+    PermissionCache.destroy_all(:person_id => @person.id)
     
     render :nothing => true
   end
   
   def delete_role
     @role.people.each do |person|
-      Permission.new(:person => person).destroy_caches
+      PermissionCache.destroy_all(:person_id => @person.id)
     end
     @role.destroy
     render :nothing => true

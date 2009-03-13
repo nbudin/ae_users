@@ -26,7 +26,7 @@ form {
     <tr>
       <td></td>
       <td>
-        <%= image_tag "openid.gif", :plugin => "ae_users" %>
+        <%= image_tag "ae_users/openid.gif" %>
         <i><%=h id.identity_url %></i>
       </td>
       <td><%= button_to "Delete", {:action => "delete_openid", :id => id.id}, {:confirm => "Are you sure you wish to remove this OpenID?"} %></td>
@@ -35,7 +35,7 @@ form {
   <tr>
     <% ae_form_for("add_openid", nil, :url => {:action => "add_openid"}) do |f| -%>
       <td>Add new OpenID:</td>
-      <td><%= text_field_tag "openid_url", @openid_url, :style => "background: #FFFFFF url('#{image_path "openid.gif", :plugin => 'ae_users'}') no-repeat scroll 0pt 50%; padding-left: 18px; width: 60%;" %></td>
+      <td><%= text_field_tag "openid_url", @openid_url, :style => "background: #FFFFFF url('#{image_path "ae_users/openid.gif"}') no-repeat scroll 0pt 50%; padding-left: 18px; width: 60%;" %></td>
       <td><%= submit_tag "Add" %></td>
     <% end -%>
   </tr>
