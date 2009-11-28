@@ -158,7 +158,7 @@ class AuthController < ApplicationController
   
   def logout
     reset_session
-    redirect_to url_for("/")
+    redirect_to :back
   end
   
   private
