@@ -1,5 +1,7 @@
 <%= person_sessions_stylesheet %>
 
+<%= error_messages_for :person_session %>
+
 <% form_for(@person_session, :html => {:class => 'auth_form'} ) do |f| -%>
 		<script type="text/javascript" src="<%=url_for :controller => 'auth', :action => "auth_form", 
 		  :format => "js", :openid_url => params[:openid_url] %>"></script>
@@ -14,9 +16,9 @@
 		<% if Illyan.signup_allowed? -%>
 		  <p>
 			<label class="block">Do you have a password?</label>
-			<%= f.radio_button "have_password", "false" %> <label for="login_have_password_false">No, I am a new user.</label>
+			<%= f.radio_button "have_password", "false" %> <%= f.label "have_password_false", "No, I am a new user." %>
 			<br/>
-			<%= f.radio_button "have_password", "true" %> <label for="login_have_password_true">Yes, my password is:</label>
+			<%= f.radio_button "have_password", "true" %> <%= f.label "have_password_true", "Yes, my password is:" %>
 			<div style="margin-left: 2em; margin-top: 0; padding-top: 0;">
 			  <%= f.password_field "password" %>
 			</div>

@@ -12,12 +12,12 @@
   <% end -%>
   <% unless params[:action] == "openid_login" -%>
   <li>
-    <%= link_to "Log in with OpenID", :controller => "auth", :action => "openid_login", :return_to => @login.return_to %>
+    <%= link_to "Log in with OpenID", :controller => "auth", :action => "openid_login", :return_to => @person_session.return_to %>
   </li>
   <% end -%>
   <% unless params[:action] == "login" -%>
   <li>
-    <%= link_to "Log in with a password", :controller => "auth", :action => "login", :return_to => @login.return_to %>
+    <%= link_to "Log in with a password", :controller => "auth", :action => "login", :return_to => @person_session.return_to %>
   </li>
   <% end -%>
 </ul>
