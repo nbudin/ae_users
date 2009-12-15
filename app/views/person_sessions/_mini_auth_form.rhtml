@@ -1,17 +1,16 @@
 <div class="authbox">
-  <% if logged_in? -%>
+  <% if person -%>
       <%= image_tag('ae_users/user.png') %>
-      <%= link_to  logged_in_person.name, 
-          :controller => 'account', :action => 'edit_profile' %>
-      <% if logged_in_person.administrator? -%>
+      <%= link_to person.name, :controller => 'account', :action => 'edit_profile' %>
+      <% if person.administrator? -%>
         |
         <%= image_tag "ae_users/admin.png" %>
         <%= link_to "Administration", :controller => 'permission', :action => 'admin' %>
       <% end -%>
       |
       <%= image_tag "ae_users/logout.png" %>
-      <%= link_to "Log out", :controller => 'auth', :action => 'logout' %>
+      <%= link_to "Log out", person_session_url(:action => :destroy) %>
   <% else -%>
-      <%= link_to "Log in", :controller => 'auth', :action => 'login', :return_to => url_for() %>
+      <%= link_to "Log in", new_person_session_url(:return_to => url_for()) %>
   <% end -%>
 </div>
