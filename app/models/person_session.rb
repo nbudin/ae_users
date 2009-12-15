@@ -37,13 +37,18 @@ class PersonSession < Authlogic::Session::Base
     errors.add(:have_password, I18n.t('error_messages.have_password_false', :default => 'must be true')) unless have_password
     return if errors.count > 0
     
-    account = Account.find_by_email_address(email)
-    if account and account.check_password(password)
+    person = Person.find_by_email_address(email)
+    self.attempted_record = person
+    if person
+      account = person.account
+      unless account
+        errors.add(:account, I18n.t('error_messages.no_account', :default => 'does not have a password set up'))
+        return
+      end
+
+      errors.add(:password, I18n.t('error_messages.invalid_password', :default => 'is incorrect')) unless account.check_password(password)
       errors.add(:account, I18n.t('error_messages.account_inactive', :default => 'is not active')) unless account.active?
-      errors.add(:account, I18n.t('error_messages.no_person'), :default => 'has no associated person record') if account.person.nil?
       return if errors.count > 0
-      
-      self.attempted_record = person
     end
   end
 end
