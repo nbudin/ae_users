@@ -11,13 +11,13 @@ module Illyan
       private
       
       def person_session
-        @authenticated_session ||= PersonSession.find
+        @person_session ||= PersonSession.find
       end
-      alias_method :logged_in?, :person_session
       
       def person
-        @person ||= person_session && person_session.person
+        @person ||= person_session && person_session.record
       end
+      alias_method :logged_in?, :person
       alias_method :logged_in_person, :person
     end
     

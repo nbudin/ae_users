@@ -1,5 +1,6 @@
 require 'illyan'
 require 'action_controller'
+require 'authlogic'
 require 'acl9'
 
 ActiveRecord::Base.send(:include, Illyan::ModelExtensions)
