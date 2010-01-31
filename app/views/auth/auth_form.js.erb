@@ -53,6 +53,6 @@ Event.observe(window, 'load', function () {
     chooseHavePassword();
 	$('login_have_password_true').observe('change', chooseHavePassword);
 	$('login_have_password_false').observe('change', chooseHavePassword);
-	$('login_email').observe('keypress', emailKeyPressListener);
+	$('login_email').observe('keydown', emailKeyPressListener);
 });
 <% end -%>
