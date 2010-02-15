@@ -5,6 +5,13 @@ This is the authentication system used in Alleged Entertainment Rails
 applications such as Journey and ProCon.  For more information, go to 
 www.aegames.org.
 
+Initial Setup
+=============
+
+For MySQL, run the included "schema.sql" file on your target database.  This
+will create the shard ae_users user info tables.
+
+For other databases, you are on your own for now.  Sorry.  :(
 
 Migrating from AeUsers 0.1
 ==========================
