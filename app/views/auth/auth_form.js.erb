@@ -1,7 +1,7 @@
 <% if AeUsers.js_framework == "jquery" -%>
 function chooseHavePassword() {
-    val = $('.auth_form input[name="login[have_password]"]:checked').val();
-	$password = $('.auth_form input[name="login[password]"]');
+    val = jQuery('.auth_form input[name="login[have_password]"]:checked').val();
+	var $password = jQuery('.auth_form input[name="login[password]"]');
 	$password.val("");
 	
 	if (val == "true") {
@@ -13,16 +13,20 @@ function chooseHavePassword() {
 }
 
 function emailKeyPressListener(event) {
-	alert(event.keycode);
+	if (event.keyCode == 9) {
+	    jQuery('.auth_form input[name="login[have_password]"][value="true"]').attr('checked', 'checked');
+	    chooseHavePassword();
+	    return false;
+	}
 }
 
-$(document).ready(function () {
+jQuery(document).ready(function () {
     <% if (params[:login] and params[:login][:password]) -%>
-      $('.auth_form input[name="login[have_password]"][value="false"]').attr('checked', 'checked');
+      jQuery('.auth_form input[name="login[have_password]"][value="false"]').attr('checked', 'checked');
     <% end -%>
 	chooseHavePassword();
-	$('.auth_form input[name="login[have_password]"]').bind('change', chooseHavePassword);
-	$('.auth_form input[name="login[email]"]').bind('keydown', emailKeyPressListener);
+	jQuery('.auth_form input[name="login[have_password]"]').bind('change', chooseHavePassword);
+	jQuery('.auth_form input[name="login[email]"]').bind('keydown', emailKeyPressListener);
 });
 <% else -%>
 function chooseHavePassword() {
