@@ -17,9 +17,11 @@ Gem::Specification.new do |s|
      "README"
   ]
   s.files = [
-    "README",
+    "LICENSE",
+     "README",
      "Rakefile",
      "VERSION",
+     "ae_users_legacy.gemspec",
      "app/controllers/account_controller.rb",
      "app/controllers/auth_controller.rb",
      "app/controllers/permission_controller.rb",
@@ -92,6 +94,7 @@ Gem::Specification.new do |s|
      "init.rb",
      "install.rb",
      "lib/ae_users.rb",
+     "rails/init.rb",
      "tasks/ae_users_tasks.rake",
      "test/ae_users_test.rb",
      "uninstall.rb"
