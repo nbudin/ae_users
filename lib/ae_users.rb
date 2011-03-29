@@ -666,8 +666,9 @@ ENDRHTML
 <script type="text/javascript">
 $(function() {
   jq_domid = "\##{domid.gsub(/(\W)/, '\\\\\\\\\1')}";
-  $(jq_domid + "_shim").autocomplete('#{auto_complete_url}',
+  $(jq_domid + "_shim").autocomplete(
       {
+        source: '#{auto_complete_url}',
         formatItem: function(data, i, n, value) {
           return value;
         },
