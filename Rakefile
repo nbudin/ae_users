@@ -24,7 +24,7 @@ end
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gemspec|
-    gemspec.name = "ae_users"
+    gemspec.name = "ae_users_legacy"
     gemspec.summary = "An authentication and authorization system for Rails"
     gemspec.email = "natbudin@gmail.com"
     gemspec.homepage = "http://github.com/nbudin/ae_users"

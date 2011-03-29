@@ -4,12 +4,13 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{ae_users}
-  s.version = "0.6.1"
+  s.name = %q{ae_users_legacy}
+  s.version = "0.6.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nat Budin"]
-  s.date = %q{2009-10-05}
+  s.date = %q{2011-03-29}
+  s.description = %q{Don't use this gem.  Use something written in the last couple years instead.}
   s.email = %q{natbudin@gmail.com}
   s.extra_rdoc_files = [
     "README"
@@ -18,7 +19,6 @@ Gem::Specification.new do |s|
     "README",
      "Rakefile",
      "VERSION",
-     "ae_users.gemspec",
      "app/controllers/account_controller.rb",
      "app/controllers/auth_controller.rb",
      "app/controllers/permission_controller.rb",
@@ -81,26 +81,16 @@ Gem::Specification.new do |s|
      "init.rb",
      "install.rb",
      "lib/ae_users.rb",
-     "rails/generators/ae_users/USAGE",
-     "rails/generators/ae_users/ae_users_generator.rb",
-     "rails/generators/ae_users/templates/add.png",
-     "rails/generators/ae_users/templates/admin.png",
-     "rails/generators/ae_users/templates/group.png",
-     "rails/generators/ae_users/templates/logout.png",
-     "rails/generators/ae_users/templates/migration.rb",
-     "rails/generators/ae_users/templates/openid.gif",
-     "rails/generators/ae_users/templates/remove.png",
-     "rails/generators/ae_users/templates/user.png",
      "rails/init.rb",
-     "rails/tasks/ae_users_tasks.rake",
+     "schema.sql",
      "test/ae_users_test.rb",
      "uninstall.rb"
   ]
   s.homepage = %q{http://github.com/nbudin/ae_users}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.5}
-  s.summary = %q{An authentication and authorization system for Rails}
+  s.rubygems_version = %q{1.3.6}
+  s.summary = %q{Legacy authentication/authorization framework}
   s.test_files = [
     "test/ae_users_test.rb"
   ]
@@ -110,8 +100,14 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
+      s.add_development_dependency(%q<thoughtbot-shoulda>, [">= 0"])
+      s.add_runtime_dependency(%q<ruby-openid>, [">= 2.0.4"])
     else
+      s.add_dependency(%q<thoughtbot-shoulda>, [">= 0"])
+      s.add_dependency(%q<ruby-openid>, [">= 2.0.4"])
     end
   else
+    s.add_dependency(%q<thoughtbot-shoulda>, [">= 0"])
+    s.add_dependency(%q<ruby-openid>, [">= 2.0.4"])
   end
 end
