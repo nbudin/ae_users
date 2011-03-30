@@ -3,7 +3,7 @@ module PermissionHelper
     url_for(:controller => 'permission', :action => 'grant', :perm => full_permission_name(item, perm), 
             :item_klass => item.class.name, :item_id => item.id, :escape => false)
   end
-  
+
   def prototype_grant_callback(item, perm)
     return <<-EOF
     nobody = $('#{perm}_nobody');
@@ -25,9 +25,9 @@ module PermissionHelper
     $.get('#{grant_url(item, perm)}',
       { 'klass': klass, 'id': id },
       function(data) {
-        $('##{perm}_insert_grants_here').insert(data);
+        $('##{perm}_insert_grants_here').append(data);
       }
-    }
+    );
     EOF
   end
   

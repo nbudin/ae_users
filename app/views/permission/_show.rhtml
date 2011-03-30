@@ -41,7 +41,7 @@ div.auto_complete {
           <% if logged_in? and logged_in_person.permitted?(item, "change_permissions") and not (grant.grantee == logged_in_person) -%>
             <%= link_to_remote "Remove",
                 { :url => { :controller => "permission", :action => "revoke", :id => grant.id, :format => "js" },
-                :success => "$('grant_#{grant.id}').remove();",
+                :success => update_page { |page| page["grant_#{grant.id}"].remove },
                 :confirm => "Are you sure you want to revoke that permission?",
 				:failure => "alert(request.responseText)" },
                 { :class => "permission_action" } %>
@@ -54,12 +54,17 @@ div.auto_complete {
     <% if logged_in? and logged_in_person.permitted?(item, "change_permissions") -%>
       <div id="<%= perm %>_insert_grants_here" style="display: inline;"></div>
       | <span id="grant_open_<%=perm%>">
-          <%= link_to_function "Add", "$('grant_open_#{perm}').toggle(); $('grant_#{perm}').toggle(); $('#{perm}_grantee_shim').focus();",
-            :class => "permission_action" %>
+          <%= link_to_function "Add", :class => "permission_action" do |page|
+            page["grant_open_#{perm}"].toggle
+            page["grant_#{perm}"].toggle
+            page["#{perm}_grantee_shim"].focus
+          end %>
         </span>
         <span id="grant_<%=perm %>" style="display: none;">
-          <%= link_to_function "&laquo;", "$('grant_open_#{perm}').toggle(); $('grant_#{perm}').toggle();",
-            :class => "permission_action" %>
+          <%= link_to_function "&laquo;", :class => "permission_action" do |page|
+            page["grant_open_#{perm}"].toggle
+            page["grant_#{perm}"].toggle
+          end %>
           <%= grant_permission_user_picker(item, perm) %>
         </span>
       <% end -%>

@@ -39,9 +39,12 @@
 </ul>
 
 <% elsif AeUsers.js_framework == "jquery" -%>
+<%= @grantees.collect do |grantee|
+  lbl = grantee.name
+  lbl << " (#{pluralize grantee.people.count, "person"})" if grantee.kind_of? Role
 
-<% for grantee in @grantees do -%>
-<%=grantee.name %><% if grantee.kind_of? Role %> (<%= pluralize(grantee.people.count, "person") %>)<% end %>|<%=grantee.class.name %>:<%= grantee.id %>
-<% end -%>
-
+  value = "#{grantee.class.name}:#{grantee.id}"
+  
+  { 'label' => lbl, 'value' => value }
+end.to_json %>
 <% end -%>

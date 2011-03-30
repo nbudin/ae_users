@@ -29,8 +29,9 @@ class PermissionController < ApplicationController
   end
   
   def auto_complete_for_permission_grantee
-    if params[:q]
-      query = params[:q].strip.downcase
+    raw_query = params[:q] || params[:term]
+    if raw_query
+      query = raw_query.strip.downcase
       liketerm = "%#{query}%"
       terms = query.split
       
@@ -58,6 +59,7 @@ class PermissionController < ApplicationController
       end
       
       @grantees.uniq!
+      @grantees.compact!
     else
       @grantees = []
     end
