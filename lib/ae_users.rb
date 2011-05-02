@@ -662,18 +662,24 @@ module AeUsers
     :url => "#{auto_complete_url}") %>
 ENDRHTML
       elsif AeUsers.js_framework == "jquery"
+        jq_domid = "##{domid}"
         rhtml << <<-ENDRHTML
 <script type="text/javascript">
-$(function() {
-  jq_domid = "\##{domid.gsub(/(\W)/, '\\\\\\\\\1')}";
-  $(jq_domid + "_shim").autocomplete('#{auto_complete_url}',
+jQuery(function() {
+  jQuery("#{jq_domid}_shim").autocomplete(
       {
-        formatItem: function(data, i, n, value) {
-          return value;
-        },
-      }).bind('result', function(e, data) {
-        $(jq_domid).val(data[1]);
-        #{options[:callback]}
+        source: '#{auto_complete_url}',
+        select: function(e, ui) {
+          if (ui.item != null) {          
+            jQuery('#{jq_domid}_shim').val(ui.item.label);
+          
+            kid = ui.item.value.split(':');
+            klass = kid[0];
+            id = kid[1];
+ 
+            #{options[:callback]}
+          }
+        }
       }
    );
 });
