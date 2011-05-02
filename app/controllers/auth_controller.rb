@@ -21,12 +21,13 @@ class AuthController < ApplicationController
   def login
     if request.post?
       unless @login.password or @login.have_password
-        redirect_to :controller => "account", :action => "signup", :email => @login.email
+        return redirect_to(:controller => "account", :action => "signup", :email => @login.email)
       end
-    end
-    if request.post? and not logged_in?
-      if attempt_login(@login)
-        successful_login_redirect
+      
+      unless logged_in?
+        if attempt_login(@login)
+          successful_login_redirect
+        end
       end
     end
   end
@@ -112,7 +113,7 @@ class AuthController < ApplicationController
       flash[:error_messages] = ["Couldn't find a person record with that ID.  
         Something may have gone wrong internally.  Please try again, and if the problem persists, please contact
         the site administrator."]
-      redirect_to :back
+      return redirect_to(:back)
     end
     
     if not AeUsers.signup_allowed?

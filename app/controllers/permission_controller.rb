@@ -90,8 +90,8 @@ class PermissionController < ApplicationController
   
   def create_role
     @role = Role.create(params[:role])
-    redirect_to :action => 'edit_role', :id => @role.id
     @role.grant(logged_in_person)
+    redirect_to :action => 'edit_role', :id => @role.id
   end
   
   before_filter :check_edit_role_perms, :only => [:edit_role, :delete_role]
