@@ -137,7 +137,11 @@ class Person < ActiveRecord::Base
   end
   
   def name
-    return "#{firstname} #{lastname}"
+    if firstname.blank? && lastname.blank?
+      "Anonymous User"
+    else
+      "#{firstname} #{lastname}"
+    end
 #    n = firstname
 #    if nickname and nickname.length > 0
 #      n += " \"#{nickname}\""
