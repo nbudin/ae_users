@@ -1,3 +1,16 @@
-<%= f.label "nickname" %> <%= f.text_field "nickname" %><br/>
-<%= f.label "phone", "Phone number" %> <%= f.text_field "phone" %><br/>
-<%= f.label "best_call_time", "Best time to call" %> <%= f.text_field "best_call_time" %>
+<h2>Convention Profile</h2>
+
+<table>
+  <tr>
+    <th style="text-align: right;"><%= f.label "nickname" %></th>
+    <td><%= f.text_field "nickname" %></td>
+  </tr>
+  <tr>
+    <th style="text-align: right;"><%= f.label "phone", "Phone number" %></th>
+    <td><%= f.text_field "phone" %></td>
+  </tr>
+  <tr>
+    <th style="text-align: right;"><%= f.label "best_call_time", "Best time to call" %></th>
+    <td><%= f.text_field "best_call_time" %></td>
+  </tr>
+</table>
