@@ -5,7 +5,7 @@ function chooseHavePassword() {
 	$password.val("");
 	
 	if (val == "true") {
-	    $password.attr('disabled', '');
+	    $password.removeAttr('disabled');
 		$password.focus();
 	} else {
 	    $password.attr('disabled', 'disabled');
