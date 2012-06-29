@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 Gem::Specification.new do |gem|
-  gem.version       = "0.6.9"
+  gem.version       = "0.6.10"
 
   gem.authors       = ["Nat Budin"]
   gem.email         = ["natbudin@gmail.com"]

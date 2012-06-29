@@ -642,7 +642,7 @@ module AeUsers
       rhtml = text_field_tag("#{field_name}_shim", default ? default.name : "", { :style => "width: 15em; display: inline; float: none;" })
       rhtml << hidden_field_tag(field_name, default ? default.id : "")
       auto_complete_url = url_for(:controller => "permission", :action => "auto_complete_for_permission_grantee",
-                                  :people => options[:people], :roles => options[:roles], :escape => false)
+                                  :people => options[:people], :roles => options[:roles], :escape => false, :only_path => false)
       
       if AeUsers.js_framework == "prototype"
         rhtml << <<-ENDRHTML
@@ -669,19 +669,21 @@ jQuery(function() {
   jQuery("#{jq_domid}_shim").autocomplete(
       {
         source: '#{auto_complete_url}',
+        focus: function(e, ui) {
+            jQuery('#{jq_domid}_shim').val(ui.item.label);
+        },
         select: function(e, ui) {
           if (ui.item != null) {          
-            jQuery('#{jq_domid}_shim').val(ui.item.label);
-          
+            jQuery('#{jq_domid}').val(ui.item.value);
+
             kid = ui.item.value.split(':');
             klass = kid[0];
             id = kid[1];
- 
+
             #{options[:callback]}
           }
         }
-      }
-   );
+      });
 });
 </script>
 ENDRHTML
