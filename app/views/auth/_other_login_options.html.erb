@@ -5,20 +5,5 @@
       <%= link_to "I forgot my password", :controller => "auth", :action => "forgot_form" %>
     </li>
   <% end -%>
-  <% if params[:action] == "openid_login" -%>
-  	<li>
-  		<%= link_to "What's OpenID?", "http://www.openid.net", :target => "_blank" %>
-	</li>
-  <% end -%>
-  <% unless params[:action] == "openid_login" -%>
-  <li>
-    <%= link_to "Log in with OpenID", :controller => "auth", :action => "openid_login", :return_to => @login.return_to %>
-  </li>
-  <% end -%>
-  <% unless params[:action] == "login" -%>
-  <li>
-    <%= link_to "Log in with a password", :controller => "auth", :action => "login", :return_to => @login.return_to %>
-  </li>
-  <% end -%>
 </ul>
 <% end -%>

@@ -23,9 +23,6 @@ update accounts, people set accounts.person_id=people.id
   where accounts.id = people.account_id;
 alter table people drop column account_id;
 
-create table open_id_identities (id int not null auto_increment primary key, 
-                                 person_id int, identity_url varchar(4000));
-
 You'll also want to run this command in each of your application databases:
 
 create table auth_tickets (id int not null auto_increment primary key, 

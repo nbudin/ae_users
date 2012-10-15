@@ -1,20 +1,11 @@
 class AuthController < ApplicationController
   unloadable
   filter_parameter_logging :password
-  before_filter :construct_login, :only => [:login, :openid_login, :forgot_form]
+  before_filter :construct_login, :only => [:login, :forgot_form]
   
   def index
     respond_to do |format|
       format.css { render :layout => false }
-    end
-  end
-  
-  def openid_login
-    params[:openid_url] ||= cookies['openid_url']    
-    if using_open_id?
-      if attempt_open_id_login(@login.return_to)
-        successful_login_redirect
-      end
     end
   end
   
@@ -28,75 +19,6 @@ class AuthController < ApplicationController
         if attempt_login(@login)
           successful_login_redirect
         end
-      end
-    end
-  end
-  
-  def needs_person
-    @open_id_identity = OpenIdIdentity.find_or_create_by_identity_url(session[:identity_url])
-    @person = Person.new
-    if not AeUsers.profile_class.nil?
-      @app_profile = AeUsers.profile_class.send(:new, :person => @person)
-    end
-    
-    if params[:registration]
-      person_map = HashWithIndifferentAccess.new(Person.sreg_map)
-      profile_map = if AeUsers.profile_class and AeUsers.profile_class.respond_to?("sreg_map")
-        HashWithIndifferentAccess.new(AeUsers.profile_class.sreg_map)
-      else
-        nil
-      end
-        
-      params[:registration].each_pair do |key, value|
-        if key == 'email'
-          params[:email] = value
-        elsif person_map.has_key?(key.to_s)
-          mapper = person_map[key]
-          attrs = mapper.call(value)
-          @person.attributes = attrs
-        elsif (profile_map and profile_map.has_key?(key))
-          mapper = profile_map[key]
-          @app_profile.attributes = mapper.call(value)
-        end
-      end
-    end
-    if params[:person]
-      @person.attributes = params[:person]
-    end
-    if params[:app_profile] and @app_profile
-      @app_profile.attributes = params[:app_profile]
-    end
-    
-    if request.post?
-      error_messages = []
-      error_fields = []
-      
-      ["firstname", "lastname", "gender"].each do |field|
-        if not @person.send(field)
-          error_fields.push field
-          error_messages.push "You must enter a value for #{field}."
-        end
-      end
-      
-      if not params[:email]
-        error_fields.push("email")
-        error_messages.push "You must enter a value for email."
-      end
-      
-      if error_messages.length > 0
-        flash[:error_fields] = error_fields
-        flash[:error_messages] = error_messages
-      else
-        @person.save
-        @person.primary_email_address = params[:email]
-        @open_id_identity.person = @person
-        @open_id_identity.save
-        if @app_profile
-          @app_profile.save
-        end
-        
-        session[:person] = @person
-        redirect_to session[:return_to]
       end
     end
   end

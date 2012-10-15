@@ -4,7 +4,7 @@
         :html => {:class => 'auth_form'} ) do |f| -%>
     <% if not logged_in? %>
       <script type="text/javascript" src="<%=url_for :controller => 'auth', :action => "auth_form", 
-        :format => "js", :openid_url => params[:openid_url] %>"></script>
+        :format => "js" %>"></script>
       
       <%= f.hidden_field "return_to" %>
 	  

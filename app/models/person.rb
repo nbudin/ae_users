@@ -1,7 +1,6 @@
 class Person < ActiveRecord::Base
   establish_connection :users
   has_one :account
-  has_many :open_id_identities
   has_and_belongs_to_many :roles
   has_many :permissions, :dependent => :destroy, :include => :permissioned
   has_many :email_addresses, :dependent => :destroy

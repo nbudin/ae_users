@@ -62,10 +62,6 @@ module AeUsers
     END_FUNC
   end
 
-  def self.map_openid(map)
-    map.open_id_complete 'auth', :controller => "auth", :action => "login", :requirements => { :method => :get }
-  end
-
   class PermissionCache
     def initialize
       @cache = {}
@@ -342,53 +338,6 @@ module AeUsers
         end
       end
       
-      def attempt_open_id_login(return_to)
-        if return_to
-          session[:return_to] = return_to
-        else
-          return_to = session[:return_to]
-        end
-        
-        openid_url = params[:openid_url]
-        params.delete(:openid_url)
-        
-        optional_fields = Person.sreg_map.keys
-        if AeUsers.profile_class and AeUsers.profile_class.respond_to?('sreg_map')
-          optional_fields += AeUsers.profile_class.sreg_map.keys
-        end
-        authenticate_with_open_id(openid_url, :optional => optional_fields) do |result, identity_url, registration|
-          if result.successful?
-            id = OpenIdIdentity.find_by_identity_url(identity_url)
-            if not id.nil?
-              @person = id.person
-            end
-            if id.nil? or @person.nil?
-              if AeUsers.signup_allowed?
-                session[:identity_url] = identity_url
-                redirect_to :controller => 'auth', :action => :needs_person, :return_to => return_to, :registration => registration.data
-                return false
-              else
-                flash[:error_messages] = ["Sorry, you are not registered with this site."]
-                return false
-              end
-            else
-              if (not AeUsers.profile_class.nil? and AeUsers.profile_class.find_by_person_id(@person.id).nil?)
-                session[:provisional_person] = @person.id
-                redirect_to :controller => 'auth', :action => :needs_profile, :return_to => return_to
-                return false
-              else
-                session[:person] = @person.id
-                return true
-              end
-            end
-          else
-            flash[:error_messages] = result.message
-            return false
-          end
-        end
-        return session[:person]
-      end
-      
       def attempt_ticket_login(secret)
         t = AuthTicket.find_ticket(secret)
         if t.nil?
@@ -406,8 +355,6 @@ module AeUsers
         if not params[:ae_email].blank? and not params[:ae_password].blank?
           login = Login.new(:email => params[:ae_email], :password => params[:ae_password], :return_to => return_to)
           attempt_login(login)
-        elsif not params[:openid_url].blank?
-          attempt_open_id_login(return_to)
         elsif not params[:ae_ticket].blank?
           attempt_ticket_login(params[:ae_ticket])
         end
