@@ -61,6 +61,15 @@ module AeUsers
       end
     END_FUNC
   end
+  
+  @@gender_field_name = "Gender"
+  def self.gender_field_name
+    @@gender_field_name
+  end
+  
+  def self.gender_field_name=(name)
+    @@gender_field_name = name
+  end
 
   class PermissionCache
     def initialize
