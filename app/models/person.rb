@@ -43,10 +43,7 @@ class Person < ActiveRecord::Base
   end
   
   def primary_email_address
-    primary = email_addresses.find_by_primary true
-    if not primary
-      primary = email_addresses.find :first
-    end
+    primary = email_addresses.detect(&:primary) || email_addreses.first
     if primary.nil?
       return nil
     else
